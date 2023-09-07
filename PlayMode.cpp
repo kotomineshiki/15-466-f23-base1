@@ -164,7 +164,9 @@ PlayMode::PlayMode() {
 	std::vector< glm::u8vec4 > data18=GetSprite("../assets/flipped8.png", size);
 	CalculateBit(data18,ppu.palette_table[3], &ppu.tile_table[52]);
 
-
+	ppu.palette_table[5]=GetPal("../assets/grass_Pal.png");
+	std::vector< glm::u8vec4 > data19=GetSprite("../assets/grass.png", size);
+	CalculateBit(data19,ppu.palette_table[5], &ppu.tile_table[53]);
 
 
 	/*ppu.tile_table[32].bit0 = {
@@ -442,14 +444,15 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 	//tilemap gets recomputed every frame as some weird plasma thing:
 	//NOTE: don't do this in your game! actually make a map or something :-)
-	/*for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
+	for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
 		for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
 			//TODO: make weird plasma thing
-			ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
+			ppu.background[x+PPU466::BackgroundWidth*y]=53+(5<<8);
+			//ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
 		}
-	}*/
+	}
 	ppu.background_color=glm::u8vec4(128,128,128,0xff);
-	//ppu.background[]
+	
 	//background scroll:
 	ppu.background_position.x = int32_t( -1 * player_at.x);
 	ppu.background_position.y = int32_t(-1* player_at.y);
