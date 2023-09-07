@@ -1,5 +1,6 @@
 #include "PPU466.hpp"
 #include "Mode.hpp"
+#include "load_save_png.hpp"
 
 #include <glm/glm.hpp>
 
@@ -25,6 +26,7 @@ struct Enemy{
 	glm::vec2 enemy_at=glm::vec2(0.0f);
 	int EnemyDirection=1;
 };
+
 struct PlayMode : Mode {
 	PlayMode();
 	virtual ~PlayMode();

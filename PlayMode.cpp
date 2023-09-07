@@ -7,7 +7,66 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+std::vector< glm::u8vec4 > GetSprite(std::string filename,glm::uvec2* size){
+	std::vector< glm::u8vec4 > data;
+	//glm::uvec2* size_p=&size;
+	glm::uvec2* size_p=new glm::uvec2(8,8);
+    load_png(filename, size_p ,&data , LowerLeftOrigin);
+	return data;
+}
+std::array< glm::u8vec4, 4> GetPal(std::string filename){
+	std::vector< glm::u8vec4 > pal;
+	glm::uvec2* size=new glm::uvec2(2,2);
+    load_png(filename, size ,&pal , LowerLeftOrigin);
+	std::array< glm::u8vec4, 4> MyPal=
+	{
+		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+	};
+	for(int i=0;i<pal.size();++i){
+		MyPal[i]=pal[i];
+	}
+	return MyPal;
+}
 
+void CalculateBit(std::vector< glm::u8vec4 >data,std::array< glm::u8vec4, 4> MyPal, PPU466::Tile* tile){
+		for(int i=0;i<8;++i){
+		uint8_t bit0=0;
+		uint8_t bit1=0;
+		for(int j=0;j<8;++j){
+			uint8_t toadd0=0;
+			uint8_t toadd1=0;
+			if(data[8*i+j]==MyPal[0])
+			{
+				toadd0=0;
+				toadd1=0;
+			}
+			if(data[8*i+j]==MyPal[1])
+			{
+				toadd0=0;
+				toadd1=1;
+			}
+			if(data[8*i+j]==MyPal[2])
+			{
+				toadd0=1;
+				toadd1=0;
+			}
+			if(data[8*i+j]==MyPal[3])
+			{
+				toadd0=1;
+				toadd1=1;
+			}
+			toadd0=toadd0<<j;
+			toadd1=toadd1<<j;
+			bit0=bit0|toadd0;
+			bit1=bit1|toadd1;
+		}
+		tile->bit0[i]=bit1;
+		tile->bit1[i]=bit0;
+	}
+}
 PlayMode::PlayMode() {
 	//TODO:
 	// you *must* use an asset pipeline of some sort to generate tiles.
@@ -57,7 +116,39 @@ PlayMode::PlayMode() {
 	}
 	enemy[0].isActive=true;
 	//use sprite 32 as a "player":
-	ppu.tile_table[32].bit0 = {
+
+
+
+	ppu.palette_table[3]=GetPal("../assets/Tank_Pal.png");
+
+	glm::uvec2* size=new glm::uvec2(8,8);
+	std::vector< glm::u8vec4 > data1=GetSprite("../assets/Tank1.png", size);
+	CalculateBit(data1,ppu.palette_table[3], &ppu.tile_table[35]);
+	std::vector< glm::u8vec4 > data2=GetSprite("../assets/Tank2.png", size);
+	CalculateBit(data2,ppu.palette_table[3], &ppu.tile_table[36]);
+	std::vector< glm::u8vec4 > data3=GetSprite("../assets/Tank3.png", size);
+	CalculateBit(data3,ppu.palette_table[3], &ppu.tile_table[37]);
+	std::vector< glm::u8vec4 > data4=GetSprite("../assets/Tank4.png", size);
+	CalculateBit(data4,ppu.palette_table[3], &ppu.tile_table[38]);
+	std::vector< glm::u8vec4 > data5=GetSprite("../assets/Tank5.png", size);
+	CalculateBit(data5,ppu.palette_table[3], &ppu.tile_table[39]);
+	std::vector< glm::u8vec4 > data6=GetSprite("../assets/Tank6.png", size);
+	CalculateBit(data6,ppu.palette_table[3], &ppu.tile_table[40]);
+	std::vector< glm::u8vec4 > data7=GetSprite("../assets/Tank7.png", size);
+	CalculateBit(data7,ppu.palette_table[3], &ppu.tile_table[41]);
+	std::vector< glm::u8vec4 > data8=GetSprite("../assets/Tank8.png", size);
+	CalculateBit(data8,ppu.palette_table[3], &ppu.tile_table[42]);
+
+	ppu.palette_table[4]=GetPal("../assets/bullet_Pal.png");//load Bullet
+	std::vector< glm::u8vec4 > data9=GetSprite("../assets/bullet.png", size);
+	CalculateBit(data9,ppu.palette_table[4], &ppu.tile_table[43]);
+
+	ppu.palette_table[5]=GetPal("../assets/Test_Pal.png");//load Enemy
+	std::vector< glm::u8vec4 > data10=GetSprite("../assets/Test.png", size);
+	CalculateBit(data10,ppu.palette_table[5], &ppu.tile_table[44]);
+
+
+	/*ppu.tile_table[32].bit0 = {
 		0b01111110,
 		0b11111111,
 		0b11111111,
@@ -152,7 +243,7 @@ PlayMode::PlayMode() {
 		glm::u8vec4(0x88, 0x88, 0xff, 0xff),//color2
 		glm::u8vec4(0x00, 0x00, 0x00, 0xff),//color3
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),//color4
-	};
+	};*/
 	ppu.palette_table[2] = {//no color
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
@@ -237,7 +328,7 @@ void PlayMode::update(float elapsed) {
 
 	constexpr float PlayerSpeed = 30.0f;
 	constexpr float EnemySpeed=30.0f;
-	constexpr float BulletSpeed=30.0f;
+	constexpr float BulletSpeed=150.0f;
 	if (left.pressed) {
 		player_at.x -= PlayerSpeed * elapsed;
 		playerDirection=1;
@@ -342,41 +433,53 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//background scroll:
 	//ppu.background_position.x = int32_t(-0.5f * player_at.x);
 	//ppu.background_position.y = int32_t(-0.5f * player_at.y);
+	//		ppu.sprites[0].x = int8_t(player_at.x);
+	//		ppu.sprites[0].y = int8_t(player_at.y);
+	//		ppu.sprites[0].index = 35;
+	//		ppu.sprites[0].attributes = 3;
 
-	//player sprite:
-	ppu.sprites[0].x = int8_t(player_at.x);
-	ppu.sprites[0].y = int8_t(player_at.y);
-	ppu.sprites[0].index = 32;
-	ppu.sprites[0].attributes = 7;
+	for(uint8_t i=0;i<2;++i){	//player sprite:
+		for(uint8_t j=0;j<4;++j){
+			ppu.sprites[i*4+j].x = int8_t(player_at.x+8*j);
+			ppu.sprites[i*4+j].y = int8_t(player_at.y-8*i);
+			ppu.sprites[i*4+j].index = 35+i*4+j;
+			ppu.sprites[i*4+j].attributes = 3;
+		}
+	}
+
 
 
 	//bullet sprite render:
 	for(int i=0;i<8;++i){
 		//if(bullet[i].isActive==true){
-			ppu.sprites[1+i].x=int8_t(bullet[i].bullet_at.x);
-			ppu.sprites[1+i].y=int8_t(bullet[i].bullet_at.y);
-			ppu.sprites[1+i].index=33;
+			ppu.sprites[10+i].x=int8_t(bullet[i].bullet_at.x);
+			ppu.sprites[10+i].y=int8_t(bullet[i].bullet_at.y);
+			ppu.sprites[10+i].index=43;
 			if(bullet[i].isActive==true){
-				ppu.sprites[1+i].attributes=6;
+				ppu.sprites[10+i].attributes=4;
 			}else{
-				ppu.sprites[1+i].attributes=2;
+				ppu.sprites[10+i].attributes=2;
 			}
 
 		//}
 	}
+
+	/*
 	for(int i=0;i<8;++i){
 		//if(enemy[i].isActive==true){
-			ppu.sprites[9+i].x=int8_t(enemy[i].enemy_at.x);
-			ppu.sprites[9+i].y=int8_t(enemy[i].enemy_at.y);
-			ppu.sprites[9+i].index=34;
+			ppu.sprites[20+i].x=int8_t(enemy[i].enemy_at.x);
+			ppu.sprites[20+i].y=int8_t(enemy[i].enemy_at.y);
+			ppu.sprites[20+i].index=42;
 			if(enemy[i].isActive==true){
-				ppu.sprites[9+i].attributes=6;
+				ppu.sprites[20+i].attributes=5;
 			}else{
-				ppu.sprites[9+i].attributes=2;
+				ppu.sprites[20+i].attributes=2;
 			}
 
 		//}
 	}
+*/
+
 	//some other misc sprites:
 	/*for (uint32_t i = 1; i < 63; ++i) {
 		float amt = (i + 2.0f * background_fade) / 62.0f;
