@@ -48,7 +48,7 @@ struct PlayMode : Mode {
 	float background_fade = 0.0f;
 
 	//player position:
-	glm::vec2 player_at = glm::vec2(0.0f);
+	glm::vec2 player_at = glm::vec2(100.0f,100.0f);
 	int playerDirection=1;
 	std::array< Bullet, 8 > bullet;
 	std::array<Enemy,8> enemy;

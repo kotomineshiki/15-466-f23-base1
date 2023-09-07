@@ -106,21 +106,20 @@ PlayMode::PlayMode() {
 			ppu.tile_table[index] = tile;
 		}
 	}
-	for(int i=0;i<enemy.size();++i){//Initialize Enemy
+	for(int i=0;i<4;++i){//Initialize Enemy
 		int direction=rand()%4+1;
 		int randomx=rand()%240;
 		int randomy=rand()%240;
 		enemy[i].enemy_at=glm::vec2(randomx,randomy);
 		enemy[i].EnemyDirection=direction;
-		enemy[i].isActive=false;
+		enemy[i].isActive=true;
 	}
-	enemy[0].isActive=true;
+	//enemy[0].isActive=true;
 	//use sprite 32 as a "player":
 
 
 
 	ppu.palette_table[3]=GetPal("../assets/Tank_Pal.png");
-
 	glm::uvec2* size=new glm::uvec2(8,8);
 	std::vector< glm::u8vec4 > data1=GetSprite("../assets/Tank1.png", size);
 	CalculateBit(data1,ppu.palette_table[3], &ppu.tile_table[35]);
@@ -143,9 +142,29 @@ PlayMode::PlayMode() {
 	std::vector< glm::u8vec4 > data9=GetSprite("../assets/bullet.png", size);
 	CalculateBit(data9,ppu.palette_table[4], &ppu.tile_table[43]);
 
-	ppu.palette_table[5]=GetPal("../assets/Test_Pal.png");//load Enemy
-	std::vector< glm::u8vec4 > data10=GetSprite("../assets/Test.png", size);
-	CalculateBit(data10,ppu.palette_table[5], &ppu.tile_table[44]);
+	ppu.palette_table[7]=GetPal("../assets/Enemy_Pal.png");//load Enemy
+	//std::vector< glm::u8vec4 > data10=GetSprite("../assets/Test.png", size);
+	//CalculateBit(data10,ppu.palette_table[5], &ppu.tile_table[44]);
+
+
+	std::vector< glm::u8vec4 > data11=GetSprite("../assets/flipped1.png", size);
+	CalculateBit(data11,ppu.palette_table[3], &ppu.tile_table[45]);
+	std::vector< glm::u8vec4 > data12=GetSprite("../assets/flipped2.png", size);
+	CalculateBit(data12,ppu.palette_table[3], &ppu.tile_table[46]);
+	std::vector< glm::u8vec4 > data13=GetSprite("../assets/flipped3.png", size);
+	CalculateBit(data13,ppu.palette_table[3], &ppu.tile_table[47]);
+	std::vector< glm::u8vec4 > data14=GetSprite("../assets/flipped4.png", size);
+	CalculateBit(data14,ppu.palette_table[3], &ppu.tile_table[48]);
+	std::vector< glm::u8vec4 > data15=GetSprite("../assets/flipped5.png", size);
+	CalculateBit(data15,ppu.palette_table[3], &ppu.tile_table[49]);
+	std::vector< glm::u8vec4 > data16=GetSprite("../assets/flipped6.png", size);
+	CalculateBit(data16,ppu.palette_table[3], &ppu.tile_table[50]);
+	std::vector< glm::u8vec4 > data17=GetSprite("../assets/flipped7.png", size);
+	CalculateBit(data17,ppu.palette_table[3], &ppu.tile_table[51]);
+	std::vector< glm::u8vec4 > data18=GetSprite("../assets/flipped8.png", size);
+	CalculateBit(data18,ppu.palette_table[3], &ppu.tile_table[52]);
+
+
 
 
 	/*ppu.tile_table[32].bit0 = {
@@ -329,19 +348,19 @@ void PlayMode::update(float elapsed) {
 	constexpr float PlayerSpeed = 30.0f;
 	constexpr float EnemySpeed=30.0f;
 	constexpr float BulletSpeed=150.0f;
-	if (left.pressed) {
+	if (left.pressed&&player_at.x>0) {
 		player_at.x -= PlayerSpeed * elapsed;
 		playerDirection=1;
 	}
-	if (right.pressed){
+	if (right.pressed&&player_at.x<220){
 		player_at.x += PlayerSpeed * elapsed;
 		playerDirection=2;
 	} 
-	if (down.pressed){
+	if (down.pressed&&player_at.y>0){
 		player_at.y -= PlayerSpeed * elapsed;
 		playerDirection=3;
 	} 
-	if (up.pressed){
+	if (up.pressed&&player_at.y<240){
 		player_at.y += PlayerSpeed * elapsed;
 		playerDirection=4;
 	} 
@@ -414,12 +433,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//--- set ppu state based on game state ---
 
 	//background color will be some hsv-like fade:
-	ppu.background_color = glm::u8vec4(
+	/*ppu.background_color = glm::u8vec4(
 		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 0.0f / 3.0f) ) ) ))),
 		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 1.0f / 3.0f) ) ) ))),
 		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 2.0f / 3.0f) ) ) ))),
 		0xff
-	);
+	);*/
 
 	//tilemap gets recomputed every frame as some weird plasma thing:
 	//NOTE: don't do this in your game! actually make a map or something :-)
@@ -429,10 +448,11 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 			ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
 		}
 	}*/
-
+	ppu.background_color=glm::u8vec4(128,128,128,0xff);
+	//ppu.background[]
 	//background scroll:
-	//ppu.background_position.x = int32_t(-0.5f * player_at.x);
-	//ppu.background_position.y = int32_t(-0.5f * player_at.y);
+	ppu.background_position.x = int32_t( -1 * player_at.x);
+	ppu.background_position.y = int32_t(-1* player_at.y);
 	//		ppu.sprites[0].x = int8_t(player_at.x);
 	//		ppu.sprites[0].y = int8_t(player_at.y);
 	//		ppu.sprites[0].index = 35;
@@ -442,7 +462,12 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		for(uint8_t j=0;j<4;++j){
 			ppu.sprites[i*4+j].x = int8_t(player_at.x+8*j);
 			ppu.sprites[i*4+j].y = int8_t(player_at.y-8*i);
-			ppu.sprites[i*4+j].index = 35+i*4+j;
+			if(playerDirection==1||playerDirection==3){
+				ppu.sprites[i*4+j].index = 45+i*4+j;
+			}else{
+				ppu.sprites[i*4+j].index = 35+i*4+j;
+			}
+
 			ppu.sprites[i*4+j].attributes = 3;
 		}
 	}
@@ -463,6 +488,28 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		//}
 	}
+
+	for(int k=0;k<4;++k){
+
+		for(uint8_t i=0;i<2;++i){	//player sprite:
+			for(uint8_t j=0;j<4;++j){
+				ppu.sprites[20+8*k+i*4+j].x = int8_t(enemy[k].enemy_at.x+8*j);
+				ppu.sprites[20+8*k+i*4+j].y = int8_t(enemy[k].enemy_at.y-8*i);
+				if(enemy[k].EnemyDirection==1||enemy[k].EnemyDirection==3){
+					ppu.sprites[20+8*k+i*4+j].index = 45+i*4+j;
+				}else{
+					ppu.sprites[20+8*k+i*4+j].index = 35+i*4+j;
+				}
+				if(enemy[k].isActive==true){
+					ppu.sprites[20+8*k+i*4+j].attributes = 7;
+				}else{
+					ppu.sprites[20+8*k+i*4+j].attributes = 2;
+				}
+
+			}
+		}
+	}
+
 
 	/*
 	for(int i=0;i<8;++i){
